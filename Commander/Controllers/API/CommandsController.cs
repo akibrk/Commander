@@ -109,6 +109,7 @@ namespace Commander.Controllers.API
             }
 
             _command_repo.DeleteCommand(commandModel);
+            _command_repo.SaveChanges();
 
             return NoContent();
         }

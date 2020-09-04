@@ -114,9 +114,29 @@
         </div>
     </div>
 
+    <div class="modal" tabindex="-1" role="dialog" id="deleteCommandModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete this command?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this comamnd?.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha512-M5KW3ztuIICmVIhjSqXe01oV2bpe248gOxqmlcYrEzAvws7Pw3z6BK0iGbrwvdrUQUhi3eXgtxp5I8PDo9YfjQ==" crossorigin="anonymous"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
     <script>
 
         $("#saveCommandButton").on("click", saveCommand);
@@ -155,7 +175,21 @@
                 body: data
             })
                 .then(res => res.json())
-                .then(res => { console.log(res);})
+                .then(command => {
+                    bootbox.alert('Command has been added');
+                    // Append new one 
+                    let template = `
+                            <li id="cmd-${command.id}">
+                                <p class="shadow-sm p-2 rounded">
+                                    Command: ${command.name} <br>
+                                    Description: ${command.description} <br>
+                                    Platform: ${command.platform}<br>
+                                    <button onclick="confirmDelete(${command.id});" class="btn btn-sm btn-danger mt-2 mr-2" >Delete</button>
+                                    <button onclick="editCommand(${command.id});" class="btn btn-sm btn-info mt-2" >Edit</button>
+                                </p>                                    
+                            </li>`;
+                    $("#commandsContainerList").append(template);
+                })
                 .catch(err => err.response);
 
         }
@@ -166,17 +200,75 @@
 
             response.forEach(command => {
                 template += `
-                            <li>
-                                    <p class="shadow-sm p-2 rounded">
-                                       Command: ${command.name} <br>
-                                       Description: ${command.description} <br>
-                                       Platform: ${command.platform}
-                                    </p>
+                            <li id="cmd-${command.id}">
+                                <p class="shadow-sm p-2 rounded">
+                                    Command: ${command.name} <br>
+                                    Description: ${command.description} <br>
+                                    Platform: ${command.platform}<br>
+                                    <button onclick="confirmDelete(${command.id});" class="btn btn-sm btn-danger mt-2 mr-2" >Delete</button>
+                                    <button onclick="editCommand(${command.id});" class="btn btn-sm btn-info mt-2" >Edit</button>
+                                </p>                                    
                             </li>`;
             });
 
             $("#commandsContainerList").html(template);
         }
+
+
+        function confirmDelete(commandId) {
+
+            bootbox.confirm("Are you sure?", (result) => {
+
+                if (!result) {
+                    return;
+                }
+                deleteCommand(commandId);
+
+            })
+        }
+        async function deleteCommand(commandId) {
+
+               fetch(`api/commands/${commandId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'akibrezakhan',
+                    }
+               })
+                .then(res => {
+                    if (res.status == 204) {
+                        bootbox.alert("Command has been deleted");
+                        $(`#cmd-${commandId}`).hide();
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+        }
+
+        function editCommand(commandId) {
+
+            
+        }
+
+        async function saveEdit(commandId) {
+            const response = await fetch(`/api/commands/${commandId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'akibrezakhan',
+                    'Content-Type': 'application/json'
+                }
+            })
+            response.then(res => res.json())
+                .then(res => {
+                    if (res.status == 204) {
+                        console.log('Delete Successful');
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+        }
+
 
         renderAllCommands();
 
