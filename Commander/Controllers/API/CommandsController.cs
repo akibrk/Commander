@@ -2,12 +2,9 @@
 using Commander.Data;
 using Commander.DTOs;
 using Commander.Models;
-using Commander.Profiles;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Commander.Controllers.API
 {
@@ -80,22 +77,26 @@ namespace Commander.Controllers.API
             
         }
 
-        //// api/commands/{id}
-        //[HttpPatch("{id}", Name = "PartialCommandUpdate")]
-        //public ActionResult PartialCommandUpdate(int id, JsonPatchDocument<CommandWriteDTO> patchDocument)
-        //{
-        //    var commandModel = _command_repo.GetCommandById(id);
+        // api/commands/{id}
+        [HttpPatch("{id}", Name = "PartialCommandUpdate")]
+        public ActionResult PartialCommandUpdate(int id, JsonPatchDocument<Command> patchDocument)
+        {
+            if(patchDocument == null)
+            {
+                return BadRequest();
+            }
 
-        //    if (commandModel == null)
-        //    {
-        //        return NotFound();
-        //    }
+            Command command = _command_repo.GetCommandById(id);
 
-            
+            if (command == null)
+            {
+                return NotFound();
+            }
 
-        //    return NoContent();
+            patchDocument.ApplyTo(command);
 
-        //}
+            return Ok(command);
+        }
 
         // api/commands/{id}
         [HttpDelete("{id}")]

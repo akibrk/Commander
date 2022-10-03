@@ -138,8 +138,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha512-M5KW3ztuIICmVIhjSqXe01oV2bpe248gOxqmlcYrEzAvws7Pw3z6BK0iGbrwvdrUQUhi3eXgtxp5I8PDo9YfjQ==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
     <script>
+        const saveCommandButton = $("#saveCommandButton");
+        saveCommandButton.on("click", saveCommand);
 
-        $("#saveCommandButton").on("click", saveCommand);
 
         async function getCommands() {
             const response = await fetch('/api/commands')
@@ -155,6 +156,10 @@
 
         function saveCommand(e){
             e.preventDefault();
+            saveCommandButton.html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+  <span class="sr-only">Loading...</span>`);
+            saveCommandButton.attr("disabled", true);
+
             let name = $("#command").val();
             let description = $("#description").val();
             let platform = $("#platform").val();
@@ -191,6 +196,9 @@
                     $("#commandsContainerList").append(template);
                 })
                 .catch(err => err.response);
+
+            saveCommandButton.html('Save Changes');
+            saveCommandButton.attr("disabled", false);
 
         }
 
